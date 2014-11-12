@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Maximize 401(k) Contributions</title>
+<body>
+Maximize 401(k) Contributions
+
+<form method="post">
+<table>
+<tr>
+<td>
+<label for="id_gross">Gross Pay</label>
+</td>
+<td>
+<input id="id_gross" type="text" name="gross" value="10.00">
+</td>
+</tr>
+
+<tr>
+<td>
+<label for="id_payper">Paid Per</label>
+</td>
+<td>
+<select id="id_payper" name="payper">
+	<option value="hour">Hour</option>
+	<option value="week">Week</option>
+	<option value="twoweeks">TwoWeeks</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>
+<label for="id_lastpaid">Last Pay Date</label>
+</td>
+<td>
+<input id="id_lastpaid" type="text" name="lastpaid" value="2014-01-01">
+</td>
+</tr>
+
+<tr>
+<td>
+<label for="id_ytd">YTD Contribution</label>
+</td>
+<td>
+<input id="id_ytd" type="text" name="ytd" value="0.00">
+</td>
+</tr>
+
+<tr>
+<td>
+<label for="id_max">Maximum Contribution</label>
+</td>
+<td>
+<input id="id_max" type="text" name="max" value="17500">
+</td>
+<td>
+(2014=$17,500, 2015=$18,000)
+</td>
+</tr>
+
+</table>
+
+<input type="submit" name="submit" value="Calculate">
+
+</form>
+
+</body>
+</html>
