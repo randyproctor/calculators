@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Disney Tickets</title>
+<style type="text/css">
+th {
+	text-align: left;
+}
+</style>
+<script language="javascript">
+
+function addTd(tr, str)
+{
+	var td = document.createElement('TD');
+	td.appendChild(document.createTextNode(str));
+	tr.appendChild(td);
+}
+
+function getDailyPrice(park, days, hop, water)
+{
+	switch (park) {
+		case "wdw":
+			if (hop && water) {
+				switch (days)
+				{
+					case  1: return 195;
+					case  2: return 282;
+					case  3: return 365;
+					case  4: return 395;
+					case  5: return 405;
+					case  6: return 415;
+					case  7: return 425;
+					case  8: return 435;
+					case  9: return 445;
+					case 10: return 455;
+				}
+			} else if (water) {
+				switch (days)
+				{
+					case  1: return 169;
+					case  2: return 256;
+					case  3: return 339;
+					case  4: return 369;
+					case  5: return 379;
+					case  6: return 389;
+					case  7: return 399;
+					case  8: return 409;
+					case  9: return 419;
+					case 10: return 429;
+				}
+			} else if (hop) {
+				switch (days)
+				{
+					case  1: return 155;
+					case  2: return 242;
+					case  3: return 325;
+					case  4: return 369;
+					case  5: return 379;
+					case  6: return 389;
+					case  7: return 399;
+					case  8: return 409;
+					case  9: return 419;
+					case 10: return 429;
+				}
+			} else {
+				switch (days)
+				{
+					case  1: return 105;
+					case  2: return 192;
+					case  3: return 275;
+					case  4: return 305;
+					case  5: return 315;
+					case  6: return 325;
+					case  7: return 335;
+					case  8: return 345;
+					case  9: return 355;
+					case 10: return 365;
+				}
+			}
+			break;
+		case "dlr":
+			var ap = 0;
+			switch (days)
+			{
+				case 1: ap =  99;
+				case 2: ap = 185;
+				case 3: ap = 235;
+				case 3: ap = 260;
+				case 3: ap = 275;
+				default: return 0;
+			}
+			if (hop) ap += 40;
+			break;
+	}
+	return 0.00;
+}
+
+function getAPPrice(park, days, premium)
+{
+	switch (park) {
+		case "wdw":
+			if (premium) {
+				return 779;
+			} else {
+				return 654;
+			}
+		case "dlr":
+			return 779;
+	}
+
+	return 0.00;
+}
+
+function getPremierPrice()
+{
+	return 1099;
+}
+
+function optimizeTickets(form)
+{
+	var park1 = form.park1.value;
+	var days1 = parseInt(form.days1.value);
+	var hop1 = form.hop1.checked;
+	var water1 = form.water1.checked;
+
+	var park2 = form.park2.value;
+	var days2 = parseInt(form.days2.value);
+	var hop2 = form.hop2.checked;
+	var water2 = form.water2.checked;
+
+	var park3 = form.park3.value;
+	var days3 = parseInt(form.days3.value);
+	var hop3 = form.hop3.checked;
+	var water3 = form.water3.checked;
+
+	var old_tbody = document.getElementById('results');
+	var new_tbody = document.createElement('tbody');
+	new_tbody.setAttribute('id', 'results');
+
+	{
+		var water = 0;
+
+		var daily = 0.00;
+		daily += getDailyPrice(park1, days1, hop1, water1);
+		daily += getDailyPrice(park2, days2, hop2, water2);
+		daily += getDailyPrice(park3, days3, hop3, water3);
+
+		var tr = document.createElement('TR');
+		addTd(tr, 'Daily Tickets');
+		addTd(tr, '$' + daily);
+		new_tbody.appendChild(tr);
+	}
+
+	{
+		var premium = 0;
+
+		var ap = 0.0;
+		var seen = new Array();
+		if ((days1 > 0) && !seen[park1]) {
+			ap += getAPPrice(park1, days1, premium);
+			seen[park1] = 1;
+		}
+		if ((days2 > 0) && !seen[park2]) {
+			ap += getAPPrice(park2, days2, premium);
+			seen[park2] = 1;
+		}
+		if ((days3 > 0) && !seen[park3]) {
+			ap += getAPPrice(park3, days3, premium);
+			seen[park3] = 1;
+		}
+
+		var tr = document.createElement('TR');
+		addTd(tr, 'Annual Passes');
+		addTd(tr, '$' + ap);
+		new_tbody.appendChild(tr);
+	}
+
+	{
+		var premier = getPremierPrice();
+
+		var tr = document.createElement('TR');
+		addTd(tr, 'Premier Passport (CA + FL)');
+		addTd(tr, '$' + premier);
+		new_tbody.appendChild(tr);
+	}
+
+	old_tbody.parentNode.replaceChild(new_tbody, old_tbody);
+}
+</script>
+</head>
+<body>
+	Optimize Disney Tickets
+	<form name="inputs">
+		<table>
+			<tr>
+				<th>Trip</th>
+				<th>Park</th>
+				<th>Days</th>
+				<th>Hop</th>
+				<th>Water</th>
+			</tr>
+			<tr>
+				<td>
+					<label for="id_trip1">Trip 1</label>
+				</td>
+				<td>
+					<select id="id_park1" name="park1">
+						<option value="wdw">Walt Disney World</option>
+						<option value="dlr">Disneyland</option>
+					</select>
+				</td>
+				<td>
+					<input id="id_days1" type="number" name="days1"
+						min="0" max="10" value="0">
+				</td>
+				<td>
+					<input id="id_hop1" type="checkbox" name="hop1">
+				</td>
+				<td>
+					<input id="id_water1" type="checkbox" name="water1">
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="id_trip2">Trip 2</label>
+				</td>
+				<td>
+					<select id="id_park2" name="park2">
+						<option value="wdw">Walt Disney World</option>
+						<option value="dlr">Disneyland</option>
+					</select>
+				</td>
+				<td>
+					<input id="id_days2" type="number" name="days2"
+						min="0" max="10" value="0">
+				</td>
+				<td>
+					<input id="id_hop2" type="checkbox" name="hop2">
+				</td>
+				<td>
+					<input id="id_water2" type="checkbox" name="water2">
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="id_trip3">Trip 3</label>
+				</td>
+				<td>
+					<select id="id_park3" name="park3">
+						<option value="wdw">Walt Disney World</option>
+						<option value="dlr">Disneyland</option>
+					</select>
+				</td>
+				<td>
+					<input id="id_days3" type="number" name="days3"
+						min="0" max="10" value="0">
+				</td>
+				<td>
+					<input id="id_hop3" type="checkbox" name="hop3">
+				</td>
+				<td>
+					<input id="id_water3" type="checkbox" name="water3">
+				</td>
+			</tr>
+		</table>
+		<input type="button" name="optimize" value="Optimize"
+			onClick="javascript:optimizeTickets(this.form)">
+	</form>
+	<table>
+		<tbody id="results">
+		</tbody>
+	</table>
+</body>
+</html>
