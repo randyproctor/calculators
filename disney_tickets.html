@@ -86,13 +86,21 @@ function getDailyPrice(park, days, hop, water)
 				case 1: ap =  99;
 				case 2: ap = 185;
 				case 3: ap = 235;
-				case 3: ap = 260;
-				case 3: ap = 275;
-				default: return 0;
+				case 4: ap = 260;
+				case 5: ap = 275;
+				default: break;
 			}
-			if (hop) ap += 40;
-			break;
+			if (ap > 0) {
+				if (hop) ap += 40;
+				return ap;
+			}
 	}
+
+	if (days > 0) {
+		document.getElementById('id_message').innerHTML =
+			'No ticket prices available for ' + days + ' days at ' + park + '.';
+	}
+
 	return 0.00;
 }
 
@@ -117,7 +125,7 @@ function getPremierPrice()
 	return 1099;
 }
 
-function optimizeTickets(form)
+function calculatePrices(form)
 {
 	var park1 = form.park1.value;
 	var days1 = parseInt(form.days1.value);
@@ -139,12 +147,16 @@ function optimizeTickets(form)
 	new_tbody.setAttribute('id', 'results');
 
 	{
-		var water = 0;
+		var daily1 = getDailyPrice(park1, days1, hop1, water1);
+		document.getElementById('id_daily1').innerHTML = '$' + daily1;
 
-		var daily = 0.00;
-		daily += getDailyPrice(park1, days1, hop1, water1);
-		daily += getDailyPrice(park2, days2, hop2, water2);
-		daily += getDailyPrice(park3, days3, hop3, water3);
+		var daily2 = getDailyPrice(park2, days2, hop2, water2);
+		document.getElementById('id_daily2').innerHTML = '$' + daily2;
+
+		var daily3 = getDailyPrice(park3, days3, hop3, water3);
+		document.getElementById('id_daily3').innerHTML = '$' + daily3;
+
+		var daily = daily1 + daily2 + daily3;
 
 		var tr = document.createElement('TR');
 		addTd(tr, 'Daily Tickets');
@@ -153,21 +165,26 @@ function optimizeTickets(form)
 	}
 
 	{
-		var premium = 0;
+		var premium1 = ((park1 == "wdw") && water1);
+		var ap1 = getAPPrice(park1, days1, premium1);
+		document.getElementById('id_ap1').innerHTML = '$' + ap1;
 
-		var ap = 0.0;
-		var seen = new Array();
-		if ((days1 > 0) && !seen[park1]) {
-			ap += getAPPrice(park1, days1, premium);
-			seen[park1] = 1;
-		}
-		if ((days2 > 0) && !seen[park2]) {
-			ap += getAPPrice(park2, days2, premium);
-			seen[park2] = 1;
-		}
-		if ((days3 > 0) && !seen[park3]) {
-			ap += getAPPrice(park3, days3, premium);
-			seen[park3] = 1;
+		var premium2 = ((park2 == "wdw") && water2);
+		var ap2 = getAPPrice(park2, days2, premium2);
+		document.getElementById('id_ap2').innerHTML = '$' + ap2;
+
+		var premium3 = ((park3 == "wdw") && water3);
+		var ap3 = getAPPrice(park3, days3, premium3);
+		document.getElementById('id_ap3').innerHTML = '$' + ap3;
+
+		var parkMax = new Object();
+		if (!(park1 in parkMax) || (ap1 > parkMax[park1])) parkMax[park1] = ap1;
+		if (!(park2 in parkMax) || (ap2 > parkMax[park2])) parkMax[park2] = ap2;
+		if (!(park3 in parkMax) || (ap3 > parkMax[park3])) parkMax[park3] = ap3;
+
+		var ap = 0;
+		for (var p in parkMax) {
+			ap += parkMax[p];
 		}
 
 		var tr = document.createElement('TR');
@@ -190,7 +207,7 @@ function optimizeTickets(form)
 </script>
 </head>
 <body>
-	Optimize Disney Tickets
+	Calculate Disney Tickes Prices
 	<form name="inputs">
 		<table>
 			<tr>
@@ -199,10 +216,12 @@ function optimizeTickets(form)
 				<th>Days</th>
 				<th>Hop</th>
 				<th>Water</th>
+				<th>Daily</th>
+				<th>AP</th>
 			</tr>
 			<tr>
 				<td>
-					<label for="id_trip1">Trip 1</label>
+					<label id="id_trip1">Trip 1</label>
 				</td>
 				<td>
 					<select id="id_park1" name="park1">
@@ -220,10 +239,16 @@ function optimizeTickets(form)
 				<td>
 					<input id="id_water1" type="checkbox" name="water1">
 				</td>
+				<td>
+					<label id="id_daily1"></label>
+				</td>
+				<td>
+					<label id="id_ap1"></label>
+				</td>
 			</tr>
 			<tr>
 				<td>
-					<label for="id_trip2">Trip 2</label>
+					<label id="id_trip2">Trip 2</label>
 				</td>
 				<td>
 					<select id="id_park2" name="park2">
@@ -241,10 +266,16 @@ function optimizeTickets(form)
 				<td>
 					<input id="id_water2" type="checkbox" name="water2">
 				</td>
+				<td>
+					<label id="id_daily2"></label>
+				</td>
+				<td>
+					<label id="id_ap2"></label>
+				</td>
 			</tr>
 			<tr>
 				<td>
-					<label for="id_trip3">Trip 3</label>
+					<label id="id_trip3">Trip 3</label>
 				</td>
 				<td>
 					<select id="id_park3" name="park3">
@@ -262,14 +293,21 @@ function optimizeTickets(form)
 				<td>
 					<input id="id_water3" type="checkbox" name="water3">
 				</td>
+				<td>
+					<label id="id_daily3"></label>
+				</td>
+				<td>
+					<label id="id_ap3"></label>
+				</td>
 			</tr>
 		</table>
-		<input type="button" name="optimize" value="Optimize"
-			onClick="javascript:optimizeTickets(this.form)">
+		<input type="button" name="calculate" value="Calculate"
+			onClick="javascript:calculatePrices(this.form)">
 	</form>
 	<table>
 		<tbody id="results">
 		</tbody>
 	</table>
+	<h3 id="id_message"></h3>
 </body>
 </html>
