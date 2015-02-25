@@ -5,7 +5,23 @@
 <title>Disney Tickets</title>
 <style type="text/css">
 th {
+/*
 	text-align: left;
+*/
+}
+.amount {
+	text-align: right;
+	font-family: monospace;
+	font-size: 1.2em;
+}
+.days {
+	width: 4em;
+}
+.check {
+	text-align: center;
+}
+td {
+	background-color: #f7f7f7;
 }
 </style>
 <script language="javascript">
@@ -125,6 +141,11 @@ function getPremierPrice()
 	return 1099;
 }
 
+function prettyAmount(amount)
+{
+	return '$' + Number(amount).toLocaleString('en');
+}
+
 function calculatePrices(form)
 {
 	var park1 = form.park1.value;
@@ -142,40 +163,32 @@ function calculatePrices(form)
 	var hop3 = form.hop3.checked;
 	var water3 = form.water3.checked;
 
-	var old_tbody = document.getElementById('results');
-	var new_tbody = document.createElement('tbody');
-	new_tbody.setAttribute('id', 'results');
-
 	{
 		var daily1 = getDailyPrice(park1, days1, hop1, water1);
-		document.getElementById('id_daily1').innerHTML = '$' + daily1;
+		document.getElementById('id_daily1').innerHTML = prettyAmount(daily1);
 
 		var daily2 = getDailyPrice(park2, days2, hop2, water2);
-		document.getElementById('id_daily2').innerHTML = '$' + daily2;
+		document.getElementById('id_daily2').innerHTML = prettyAmount(daily2);
 
 		var daily3 = getDailyPrice(park3, days3, hop3, water3);
-		document.getElementById('id_daily3').innerHTML = '$' + daily3;
+		document.getElementById('id_daily3').innerHTML = prettyAmount(daily3);
 
 		var daily = daily1 + daily2 + daily3;
-
-		var tr = document.createElement('TR');
-		addTd(tr, 'Daily Tickets');
-		addTd(tr, '$' + daily);
-		new_tbody.appendChild(tr);
+		document.getElementById('id_total_daily').innerHTML = prettyAmount(daily);
 	}
 
 	{
 		var premium1 = ((park1 == "wdw") && water1);
 		var ap1 = getAPPrice(park1, days1, premium1);
-		document.getElementById('id_ap1').innerHTML = '$' + ap1;
+		document.getElementById('id_ap1').innerHTML = prettyAmount(ap1);
 
 		var premium2 = ((park2 == "wdw") && water2);
 		var ap2 = getAPPrice(park2, days2, premium2);
-		document.getElementById('id_ap2').innerHTML = '$' + ap2;
+		document.getElementById('id_ap2').innerHTML = prettyAmount(ap2);
 
 		var premium3 = ((park3 == "wdw") && water3);
 		var ap3 = getAPPrice(park3, days3, premium3);
-		document.getElementById('id_ap3').innerHTML = '$' + ap3;
+		document.getElementById('id_ap3').innerHTML = prettyAmount(ap3);
 
 		var parkMax = new Object();
 		if (!(park1 in parkMax) || (ap1 > parkMax[park1])) parkMax[park1] = ap1;
@@ -186,23 +199,13 @@ function calculatePrices(form)
 		for (var p in parkMax) {
 			ap += parkMax[p];
 		}
-
-		var tr = document.createElement('TR');
-		addTd(tr, 'Annual Passes');
-		addTd(tr, '$' + ap);
-		new_tbody.appendChild(tr);
+		document.getElementById('id_total_ap').innerHTML = prettyAmount(ap);
 	}
 
 	{
-		var premier = getPremierPrice();
-
-		var tr = document.createElement('TR');
-		addTd(tr, 'Premier Passport (CA + FL)');
-		addTd(tr, '$' + premier);
-		new_tbody.appendChild(tr);
+		var pp = getPremierPrice();
+		document.getElementById('id_total_pp').innerHTML = prettyAmount(pp);
 	}
-
-	old_tbody.parentNode.replaceChild(new_tbody, old_tbody);
 }
 </script>
 </head>
@@ -218,6 +221,7 @@ function calculatePrices(form)
 				<th>Water</th>
 				<th>Daily</th>
 				<th>AP</th>
+				<th>PP</th>
 			</tr>
 			<tr>
 				<td>
@@ -230,20 +234,22 @@ function calculatePrices(form)
 					</select>
 				</td>
 				<td>
-					<input id="id_days1" type="number" name="days1"
+					<input id="id_days1" class="days" type="number" name="days1"
 						min="0" max="10" value="0">
 				</td>
-				<td>
+				<td class="check">
 					<input id="id_hop1" type="checkbox" name="hop1">
 				</td>
-				<td>
+				<td class="check">
 					<input id="id_water1" type="checkbox" name="water1">
 				</td>
-				<td>
+				<td class="amount">
 					<label id="id_daily1"></label>
 				</td>
-				<td>
+				<td class="amount">
 					<label id="id_ap1"></label>
+				</td>
+				<td>
 				</td>
 			</tr>
 			<tr>
@@ -257,20 +263,22 @@ function calculatePrices(form)
 					</select>
 				</td>
 				<td>
-					<input id="id_days2" type="number" name="days2"
+					<input id="id_days2" class="days" type="number" name="days2"
 						min="0" max="10" value="0">
 				</td>
-				<td>
+				<td class="check">
 					<input id="id_hop2" type="checkbox" name="hop2">
 				</td>
-				<td>
+				<td class="check">
 					<input id="id_water2" type="checkbox" name="water2">
 				</td>
-				<td>
+				<td class="amount">
 					<label id="id_daily2"></label>
 				</td>
-				<td>
+				<td class="amount">
 					<label id="id_ap2"></label>
+				</td>
+				<td>
 				</td>
 			</tr>
 			<tr>
@@ -284,30 +292,50 @@ function calculatePrices(form)
 					</select>
 				</td>
 				<td>
-					<input id="id_days3" type="number" name="days3"
+					<input id="id_days3" class="days" type="number" name="days3"
 						min="0" max="10" value="0">
 				</td>
-				<td>
+				<td class="check">
 					<input id="id_hop3" type="checkbox" name="hop3">
 				</td>
-				<td>
+				<td class="check">
 					<input id="id_water3" type="checkbox" name="water3">
 				</td>
-				<td>
+				<td class="amount">
 					<label id="id_daily3"></label>
 				</td>
-				<td>
+				<td class="amount">
 					<label id="id_ap3"></label>
+				</td>
+				<td>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label id="id_total">Total</label>
+				</td>
+				<td>
+				</td>
+				<td>
+				</td>
+				<td>
+				</td>
+				<td>
+				</td>
+				<td class="amount">
+					<label id="id_total_daily"></label>
+				</td>
+				<td class="amount">
+					<label id="id_total_ap"></label>
+				</td>
+				<td class="amount">
+					<label id="id_total_pp"></label>
 				</td>
 			</tr>
 		</table>
 		<input type="button" name="calculate" value="Calculate"
 			onClick="javascript:calculatePrices(this.form)">
 	</form>
-	<table>
-		<tbody id="results">
-		</tbody>
-	</table>
 	<h3 id="id_message"></h3>
 </body>
 </html>
