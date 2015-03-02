@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Change Background Color</title>
+<script language="javascript">
+
+function changeColors()
+{
+	var body = document.getElementById('id_body');
+
+	var color = document.getElementById('id_color').value;
+	body.style.color = color;
+
+	var bgcolor = document.getElementById('id_bgcolor').value;
+	body.style.background = bgcolor;
+
+	/* don't submit */
+	return false;
+}
+
+var submitHandler = changeColors;
+
+</script>
+</head>
+<body id="id_body">
+	<form onsubmit="return submitHandler()">
+		<label for="id_color">Foreground</label>
+		<input type="text" id="id_color" >
+
+		<label for="id_bgcolor">Background</label>
+		<input type="text" id="id_bgcolor" >
+
+		<input type="button" name="change" value="Change Colors"
+			onClick="javascript:changeColors()">
+
+	</form>
+	<h1>Hello!</h1>
+</body>
+</html>
