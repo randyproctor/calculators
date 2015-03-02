@@ -26,13 +26,6 @@ td {
 </style>
 <script language="javascript">
 
-function addTd(tr, str)
-{
-	var td = document.createElement('TD');
-	td.appendChild(document.createTextNode(str));
-	tr.appendChild(td);
-}
-
 function getDailyPrice(park, days, hop, water)
 {
 	switch (park) {
@@ -122,15 +115,17 @@ function getDailyPrice(park, days, hop, water)
 
 function getAPPrice(park, days, premium)
 {
-	switch (park) {
-		case "wdw":
-			if (premium) {
+	if (days > 0) {
+		switch (park) {
+			case "wdw":
+				if (premium) {
+					return 779;
+				} else {
+					return 654;
+				}
+			case "dlr":
 				return 779;
-			} else {
-				return 654;
-			}
-		case "dlr":
-			return 779;
+		}
 	}
 
 	return 0.00;
@@ -146,195 +141,252 @@ function prettyAmount(amount)
 	return '$' + Number(amount).toLocaleString('en');
 }
 
+var NUM_ROWS = 3;
+
 function calculatePrices(form)
 {
-	var park1 = form.park1.value;
-	var days1 = parseInt(form.days1.value);
-	var hop1 = form.hop1.checked;
-	var water1 = form.water1.checked;
+	var parkMax = new Object();
+	var totalDaily = 0;
 
-	var park2 = form.park2.value;
-	var days2 = parseInt(form.days2.value);
-	var hop2 = form.hop2.checked;
-	var water2 = form.water2.checked;
+	for (i = 1; i <= NUM_ROWS; i++) {
+		var park = document.getElementById('id_park' + i).value;
+		var days = parseInt(document.getElementById('id_days' + i).value);
+		var hop = document.getElementById('id_hop' + i).checked;
+		var water = document.getElementById('id_water' + i).checked;
 
-	var park3 = form.park3.value;
-	var days3 = parseInt(form.days3.value);
-	var hop3 = form.hop3.checked;
-	var water3 = form.water3.checked;
+		var daily = getDailyPrice(park, days, hop, water);
+		document.getElementById('id_daily' + i).innerHTML = prettyAmount(daily);
+		totalDaily += daily;
 
-	{
-		var daily1 = getDailyPrice(park1, days1, hop1, water1);
-		document.getElementById('id_daily1').innerHTML = prettyAmount(daily1);
+		var premium = ((park == "wdw") && water);
+		var ap = getAPPrice(park, days, premium);
+		document.getElementById('id_ap' + i).innerHTML = prettyAmount(ap);
 
-		var daily2 = getDailyPrice(park2, days2, hop2, water2);
-		document.getElementById('id_daily2').innerHTML = prettyAmount(daily2);
-
-		var daily3 = getDailyPrice(park3, days3, hop3, water3);
-		document.getElementById('id_daily3').innerHTML = prettyAmount(daily3);
-
-		var daily = daily1 + daily2 + daily3;
-		document.getElementById('id_total_daily').innerHTML = prettyAmount(daily);
+		if (!(park in parkMax) || (ap > parkMax[park])) parkMax[park] = ap;
 	}
 
-	{
-		var premium1 = ((park1 == "wdw") && water1);
-		var ap1 = getAPPrice(park1, days1, premium1);
-		document.getElementById('id_ap1').innerHTML = prettyAmount(ap1);
+	document.getElementById('id_total_daily').innerHTML =
+		prettyAmount(totalDaily);
 
-		var premium2 = ((park2 == "wdw") && water2);
-		var ap2 = getAPPrice(park2, days2, premium2);
-		document.getElementById('id_ap2').innerHTML = prettyAmount(ap2);
-
-		var premium3 = ((park3 == "wdw") && water3);
-		var ap3 = getAPPrice(park3, days3, premium3);
-		document.getElementById('id_ap3').innerHTML = prettyAmount(ap3);
-
-		var parkMax = new Object();
-		if (!(park1 in parkMax) || (ap1 > parkMax[park1])) parkMax[park1] = ap1;
-		if (!(park2 in parkMax) || (ap2 > parkMax[park2])) parkMax[park2] = ap2;
-		if (!(park3 in parkMax) || (ap3 > parkMax[park3])) parkMax[park3] = ap3;
-
-		var ap = 0;
-		for (var p in parkMax) {
-			ap += parkMax[p];
-		}
-		document.getElementById('id_total_ap').innerHTML = prettyAmount(ap);
+	var maxAp = 0;
+	for (var p in parkMax) {
+		maxAp += parkMax[p];
 	}
+	document.getElementById('id_total_ap').innerHTML = prettyAmount(maxAp);
 
 	{
 		var pp = getPremierPrice();
 		document.getElementById('id_total_pp').innerHTML = prettyAmount(pp);
 	}
 }
+
+function createTr()
+{
+	return document.createElement('tr');
+}
+
+function createTd()
+{
+	return document.createElement('td');
+}
+
+function createTdWithChild(className, child)
+{
+	var e = createTd();
+
+	e.setAttribute('class', className);
+	e.appendChild(child);
+
+	return e;
+}
+
+function createTdStr(className, str)
+{
+	return createTdWithChild(className, document.createTextNode(str));
+}
+
+function createSelect(id, name)
+{
+	var select = document.createElement('select');
+
+	select.setAttribute('id', id);
+	select.setAttribute('name', name);
+
+	return select;
+}
+
+function createOption(value, str)
+{
+	var option = document.createElement('option');
+
+	option.setAttribute('value', value);
+	option.appendChild(document.createTextNode(str));
+
+	return option;
+}
+
+function createNumberInput(id, classStr, name, min, max, value)
+{
+	var input = document.createElement('input');
+
+	input.setAttribute('id', id);
+	input.setAttribute('type', 'number');
+	input.setAttribute('class', classStr);
+	input.setAttribute('name', name);
+	input.setAttribute('min', min);
+	input.setAttribute('max', max);
+	input.setAttribute('value', value);
+
+	return input;
+}
+
+function createCheckboxInput(id, name)
+{
+	var checkbox = document.createElement('input');
+
+	checkbox.setAttribute('id', id);
+	checkbox.setAttribute('type', 'checkbox');
+	checkbox.setAttribute('name', name);
+
+	return checkbox;
+}
+
+function createLabel(id)
+{
+	var e = document.createElement('label');
+
+	e.setAttribute('id', id);
+
+	return e;
+}
+
+function createThWithChild(child)
+{
+	var e = document.createElement('th');
+
+	e.appendChild(child);
+
+	return e;
+}
+
+function createThStr(str)
+{
+	return createThWithChild(document.createTextNode(str));
+}
+
+function buildInputTable()
+{
+	var old_tbody = document.getElementById('inputTable');
+	var new_tbody = document.createElement('tbody');
+	new_tbody.setAttribute('id', 'inputTable');
+
+	var tr = createTr();
+	tr.appendChild(createThStr('Trip'));
+	tr.appendChild(createThStr('Park'));
+	tr.appendChild(createThStr('Days'));
+	tr.appendChild(createThStr('Hop'));
+	tr.appendChild(createThStr('Water'));
+	tr.appendChild(createThStr('Daily'));
+	tr.appendChild(createThStr('AP'));
+	tr.appendChild(createThStr('PP'));
+	new_tbody.appendChild(tr);
+
+	for (i = 1; i <= NUM_ROWS; i++) {
+		var tr = createTr();
+
+		tr.appendChild(createTdStr('', 'Trip ' + i));
+
+		var select = createSelect('id_park' + i, 'park' + i);
+		select.appendChild(createOption('wdw', 'Walt Disney World'));
+		select.appendChild(createOption('dlr', 'Disneyland'));
+		tr.appendChild(createTdWithChild('', select));
+
+		tr.appendChild(
+			createTdWithChild('',
+				createNumberInput('id_days' + i, 'days', 'days' + i, 0, 10, 0)
+			)
+		);
+
+		tr.appendChild(
+			createTdWithChild('check',
+				createCheckboxInput('id_hop' + i, 'hop' + i)
+			)
+		);
+
+		tr.appendChild(
+			createTdWithChild('check',
+				createCheckboxInput('id_water' + i, 'water' + i)
+			)
+		);
+
+		tr.appendChild(
+			createTdWithChild('amount',
+				createLabel('id_daily' + i)
+			)
+		);
+
+		tr.appendChild(
+			createTdWithChild('amount',
+				createLabel('id_ap' + i)
+			)
+		);
+
+		tr.appendChild(
+			createTdWithChild('amount',
+				createLabel('id_pp' + i)
+			)
+		);
+
+		new_tbody.appendChild(tr);
+	}
+
+	var tr = createTr();
+	tr.appendChild(createTdStr('', 'Total'));
+	tr.appendChild(createTd());
+	tr.appendChild(createTd());
+	tr.appendChild(createTd());
+	tr.appendChild(createTd());
+	tr.appendChild(
+		createTdWithChild('amount',
+			createLabel('id_total_daily')
+		)
+	);
+	tr.appendChild(
+		createTdWithChild('amount',
+			createLabel('id_total_ap')
+		)
+	);
+	tr.appendChild(
+		createTdWithChild('amount',
+			createLabel('id_total_pp')
+		)
+	);
+	new_tbody.appendChild(tr);
+
+	old_tbody.parentNode.replaceChild(new_tbody, old_tbody);
+}
+
+window.onload = buildInputTable;
+
+function addInputRow()
+{
+	NUM_ROWS++;
+	buildInputTable();
+}
+
 </script>
 </head>
 <body>
 	Calculate Disney Tickes Prices
 	<form name="inputs">
 		<table>
-			<tr>
-				<th>Trip</th>
-				<th>Park</th>
-				<th>Days</th>
-				<th>Hop</th>
-				<th>Water</th>
-				<th>Daily</th>
-				<th>AP</th>
-				<th>PP</th>
-			</tr>
-			<tr>
-				<td>
-					<label id="id_trip1">Trip 1</label>
-				</td>
-				<td>
-					<select id="id_park1" name="park1">
-						<option value="wdw">Walt Disney World</option>
-						<option value="dlr">Disneyland</option>
-					</select>
-				</td>
-				<td>
-					<input id="id_days1" class="days" type="number" name="days1"
-						min="0" max="10" value="0">
-				</td>
-				<td class="check">
-					<input id="id_hop1" type="checkbox" name="hop1">
-				</td>
-				<td class="check">
-					<input id="id_water1" type="checkbox" name="water1">
-				</td>
-				<td class="amount">
-					<label id="id_daily1"></label>
-				</td>
-				<td class="amount">
-					<label id="id_ap1"></label>
-				</td>
-				<td>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<label id="id_trip2">Trip 2</label>
-				</td>
-				<td>
-					<select id="id_park2" name="park2">
-						<option value="wdw">Walt Disney World</option>
-						<option value="dlr">Disneyland</option>
-					</select>
-				</td>
-				<td>
-					<input id="id_days2" class="days" type="number" name="days2"
-						min="0" max="10" value="0">
-				</td>
-				<td class="check">
-					<input id="id_hop2" type="checkbox" name="hop2">
-				</td>
-				<td class="check">
-					<input id="id_water2" type="checkbox" name="water2">
-				</td>
-				<td class="amount">
-					<label id="id_daily2"></label>
-				</td>
-				<td class="amount">
-					<label id="id_ap2"></label>
-				</td>
-				<td>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<label id="id_trip3">Trip 3</label>
-				</td>
-				<td>
-					<select id="id_park3" name="park3">
-						<option value="wdw">Walt Disney World</option>
-						<option value="dlr">Disneyland</option>
-					</select>
-				</td>
-				<td>
-					<input id="id_days3" class="days" type="number" name="days3"
-						min="0" max="10" value="0">
-				</td>
-				<td class="check">
-					<input id="id_hop3" type="checkbox" name="hop3">
-				</td>
-				<td class="check">
-					<input id="id_water3" type="checkbox" name="water3">
-				</td>
-				<td class="amount">
-					<label id="id_daily3"></label>
-				</td>
-				<td class="amount">
-					<label id="id_ap3"></label>
-				</td>
-				<td>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<label id="id_total">Total</label>
-				</td>
-				<td>
-				</td>
-				<td>
-				</td>
-				<td>
-				</td>
-				<td>
-				</td>
-				<td class="amount">
-					<label id="id_total_daily"></label>
-				</td>
-				<td class="amount">
-					<label id="id_total_ap"></label>
-				</td>
-				<td class="amount">
-					<label id="id_total_pp"></label>
-				</td>
-			</tr>
+			<tbody id="inputTable">
+		</tbody>
 		</table>
 		<input type="button" name="calculate" value="Calculate"
 			onClick="javascript:calculatePrices(this.form)">
+		<input type="button" name="addRow" value="Add Row"
+			onClick="javascript:addInputRow()">
 	</form>
 	<h3 id="id_message"></h3>
 </body>
